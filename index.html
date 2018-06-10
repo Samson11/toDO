@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>toDo</title>
+    <link rel="stylesheet" href="bootstrap.css">
+    <link rel="stylesheet" href="sweetalert.css">
+    <script src="sweetalert-dev.js"></script>
+    </head>
+<body class="container">
+    <nav>
+        <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">        
+           <div  class="display-4">toDO</div> 
+    </div>
+    </nav>
+    <div class="jumbotron text-center">
+    <ul class="lead"></ul></div>
+    <footer class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow"> 
+    </footer>
+    <div  class="lead">
+        <div class=" text-center">
+            <button class="btn btn-outline-secondary">Comment</button>
+        </div>
+        </div>
+</body>
+<script>
+    const electron = require('electron')
+    const {ipcRenderer} =  electron
+    const ul = document.querySelector('ul')
+    const comment = document.querySelector('button')
+
+    ipcRenderer.on('item:add',function(e,item){
+        const li = document.createElement('li')
+        const itemText = document.createTextNode(item)
+        li.appendChild(itemText)
+        ul.appendChild(li)
+    })
+
+    ipcRenderer.on('item:clear',function(){
+        ul.innerHTML = ""
+    })
+
+    ul.addEventListener('dblclick',removeItem)
+    comment.addEventListener('click',function(){
+	swal({
+		title: "Comments",
+		text: 'Write your comment and sugestion:',
+		type: 'input',
+		showCancelButton: true,
+        closeOnConfirm: false,
+		animation: "slide-from-top",
+		inputPlaceholder: "Write something",
+	},
+	function(inputValue){
+		if (inputValue === false){
+            return false;
+            }
+
+		if (inputValue === "") {
+			swal.showInputError("You need to write something!");
+			return false;
+		}
+    
+		swal("Sending...", 'You wrote: ' + inputValue);
+        swal({
+            title: "Sending...",
+            text: 'You wrote: ' + inputValue,
+            type: "info",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true,
+            },
+            function(){
+            setTimeout(function(){
+                swal({
+                    title:'Sent...',
+                    text:'Your message has been sent :)',
+                    type: "success",
+                    closeOnConfirm: true
+                });
+            }, 2000);
+            });
+    },
+);
+})
+
+    function removeItem(e){
+        swal({
+		title: "Are you sure?",
+		text: "You will not be able to recover this toDO!",
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: '#DD6B55',
+		confirmButtonText: 'Yes',
+		cancelButtonText: "No",
+		closeOnConfirm: false,
+		closeOnCancel: false
+	},
+	function(isConfirm){
+    if (isConfirm){
+      swal("Deleted!", "Your toDO has been deleted!", "success");
+      e.target.remove()
+    } else {
+      swal("Cancelled", "Your toDO is safe :)", "error");
+    }
+	});
+};
+</script>
+</html>
